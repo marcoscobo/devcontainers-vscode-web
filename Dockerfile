@@ -1,9 +1,7 @@
 FROM codercom/code-server:4.103.1-ubuntu
-
 USER root
-
+# ---------- Required packages ----------
 ENV DEBIAN_FRONTEND=noninteractive
-
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         git \
@@ -13,9 +11,12 @@ RUN apt-get update && \
         ca-certificates \
         tar \
         tzdata \
-        nodejs \
-        npm && \
-    install -m 0755 -d /etc/apt/keyrings && \
+        gpg \
+        gnupg2 \
+        dirmngr && \
+    rm -rf /var/lib/apt/lists/*
+# ---------- Docker ----------
+RUN install -m 0755 -d /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc && \
     chmod a+r /etc/apt/keyrings/docker.asc && \
     echo \
@@ -25,21 +26,23 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin && \
     groupadd -f docker && usermod -aG docker coder && newgrp docker && \
-    npm install -g @devcontainers/cli && \
     rm -rf /var/lib/apt/lists/*
-
+# ---------- Nvm ----------
+ARG NODE_VERSION=20
+ENV NVM_DIR=/root/.nvm
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && \
+    bash -lc 'source "$NVM_DIR/nvm.sh" && \
+    nvm install $NODE_VERSION && \
+    nvm alias default $NODE_VERSION && \
+    BIN_DIR="$(dirname "$(nvm which default)")" && \
+    ln -sf "$BIN_DIR/node" /usr/local/bin/node && \
+    ln -sf "$BIN_DIR/npm"  /usr/local/bin/npm && \
+    ln -sf "$BIN_DIR/npx"  /usr/local/bin/npx'
+# ---------- Dev Containers CLI ----------
+RUN npm install -g @devcontainers/cli
+# ---------- Entrypoint ----------
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-USER coder
-
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
-# RUN apt-get update && apt-get install -y --no-install-recommends jq && \
-#     rm -rf /var/lib/apt/lists/*
-# RUN jq '.extensionsGallery = {"serviceUrl":"https://marketplace.visualstudio.com/_apis/public/gallery","itemUrl":"https://marketplace.visualstudio.com/items","cacheUrl":"https://vscode.blob.core.windows.net/gallery/index"}' \
-#   /usr/lib/code-server/lib/vscode/product.json > /tmp/product.json && \
-#   mv /tmp/product.json /usr/lib/code-server/lib/vscode/product.json
-# RUN code-server --install-extension ms-vscode-remote.remote-containers
-
-# CONTAINER_ID=$(docker run --privileged --rm -d -p 127.0.0.1:8080:8080 vscode-dind)
+# CONTAINER_ID=$(docker run --privileged --rm -d -p 127.0.0.1:80:80 vscode-dind)
+# Inside vscode terminal: devcontainer up --workspace-folder .
+# Inside vscode terminal: docker exec -it <container_name/id> /bin/bash
