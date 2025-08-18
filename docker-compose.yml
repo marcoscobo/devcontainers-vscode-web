@@ -1,0 +1,30 @@
+services:
+  coder-dind-1:
+    image: coder-dind
+    container_name: coder-dind-1
+    privileged: true
+    ports:
+      - 8081:8080
+      - 8001:8001
+      - 8002:8002
+      - 8003:8003
+      - 8004:8004
+    volumes:
+      - ./ignore/workspace1:/home/coder
+  coder-dind-2:
+    image: coder-dind
+    container_name: coder-dind-2
+    privileged: true
+    ports:
+      - 8082:8080
+      - 8101:8001
+      - 8102:8002
+      - 8103:8003
+      - 8104:8004
+    volumes:
+      - ./ignore/workspace2:/home/coder
+
+# docker build -t coder-dind .
+# docker compose up -d
+# Inside vscode terminal: devcontainer up --workspace-folder .
+# Inside vscode terminal: docker exec -it <container_name/id> /bin/bash
