@@ -2,25 +2,13 @@ FROM codercom/code-server:4.103.1-ubuntu
 USER root
 # ---------- Required packages ----------
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        git \
-        openssh-client \
-        tini \
-        curl \
-        ca-certificates \
-        tar \
-        tzdata \
-        gpg \
-        gnupg2 \
-        dirmngr && \
+RUN apt-get update && apt-get install -y --no-install-recommends git openssh-client tini curl ca-certificates tar tzdata gpg gnupg2 dirmngr && \
     rm -rf /var/lib/apt/lists/*
 # ---------- Docker ----------
 RUN install -m 0755 -d /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc && \
     chmod a+r /etc/apt/keyrings/docker.asc && \
-    echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
     $(. /etc/os-release && echo \"${UBUNTU_CODENAME:-$VERSION_CODENAME}\") stable" | \
     tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
@@ -40,9 +28,10 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | b
     ln -sf "$BIN_DIR/npx"  /usr/local/bin/npx'
 # ---------- Dev Containers CLI ----------
 RUN npm install -g @devcontainers/cli
+RUN code-server --install-extension vivaxy.vscode-conventional-commits && \
+    code-server --install-extension ms-python.python && \
+    code-server --install-extension cweijan.vscode-database-client2 && \
+    code-server --install-extension cweijan.dbclient-jdbc
 # ---------- Entrypoint ----------
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-# CONTAINER_ID=$(docker run --privileged --rm -d -p 127.0.0.1:80:80 vscode-dind)
-# Inside vscode terminal: devcontainer up --workspace-folder .
-# Inside vscode terminal: docker exec -it <container_name/id> /bin/bash
