@@ -30,7 +30,3 @@ services:
       - CLONE_REPO=https://github.com/marcoscobo/devcontainers-consumer-node.git
     volumes:
       - ./ignore/workspace_consumer:/home/coder
-# docker build -t coder-dind .
-# docker compose up -d
-# Inside vscode terminal: devcontainer up --workspace-folder .
-# Inside vscode terminal: docker exec -it <container_name/id> /bin/bash
