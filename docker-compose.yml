@@ -1,0 +1,32 @@
+services:
+  coder-dind-etl:
+    image: coder-dind
+    container_name: coder-dind-etl
+    privileged: true
+    ports:
+      - 81:80
+      - 8080:8080
+      - 5432:5432
+      - 9092:9092
+      - 9000:9000
+      - 9001:9001
+      - 8120:8120
+      - 9090:9090
+    environment:
+      - CLONE_REPO=https://github.com/marcoscobo/devcontainers-etl-node.git
+    volumes:
+      - ./ignore/workspace_etl:/home/coder
+  coder-dind-consumer:
+    image: coder-dind
+    container_name: coder-dind-consumer
+    privileged: true
+    ports:
+      - 82:80
+      - 8081:8081
+      - 8121:8121
+      - 9091:9091
+      - 3000:3000
+    environment:
+      - CLONE_REPO=https://github.com/marcoscobo/devcontainers-consumer-node.git
+    volumes:
+      - ./ignore/workspace_consumer:/home/coder
