@@ -34,4 +34,5 @@ RUN code-server --install-extension vivaxy.vscode-conventional-commits && \
     code-server --install-extension cweijan.dbclient-jdbc
 # ---------- Entrypoint ----------
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh && sed -i 's/\r$//' /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
